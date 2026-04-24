@@ -1,7 +1,4 @@
-
-README
-
-
 # TaskManagement
-タスクマネジメントアプリの管理
+Task Management Project
+
 
