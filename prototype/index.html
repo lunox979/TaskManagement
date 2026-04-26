@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskManagement</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <h1 class="app-title">TaskManagement</h1>
+  </header>
+
+  <main class="board" id="board">
+    <div class="column" id="col-todo" data-status="todo">
+      <div class="column-header">
+        <span class="column-title">未着手</span>
+        <div class="column-header-right">
+          <span class="column-count" id="count-todo">0</span>
+          <button class="sort-btn" data-status="todo">優先度順</button>
+        </div>
+      </div>
+      <div class="card-list" id="list-todo"></div>
+      <button class="add-btn" data-status="todo">＋ 追加</button>
+    </div>
+
+    <div class="column" id="col-inprogress" data-status="inprogress">
+      <div class="column-header">
+        <span class="column-title">進行中</span>
+        <div class="column-header-right">
+          <span class="column-count" id="count-inprogress">0</span>
+          <button class="sort-btn" data-status="inprogress">優先度順</button>
+        </div>
+      </div>
+      <div class="card-list" id="list-inprogress"></div>
+      <button class="add-btn" data-status="inprogress">＋ 追加</button>
+    </div>
+
+    <div class="column" id="col-done" data-status="done">
+      <div class="column-header">
+        <span class="column-title">完了</span>
+        <div class="column-header-right">
+          <span class="column-count" id="count-done">0</span>
+          <button class="sort-btn" data-status="done">優先度順</button>
+        </div>
+      </div>
+      <div class="card-list" id="list-done"></div>
+      <button class="add-btn" data-status="done">＋ 追加</button>
+    </div>
+  </main>
+
+  <!-- タスク追加/編集モーダル（共通） -->
+  <div class="modal-overlay" id="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h2 class="modal-title" id="modal-title">タスクを追加</h2>
+
+      <div class="form-group">
+        <label class="form-label" for="input-title">タイトル <span class="required">*</span></label>
+        <input class="form-input" id="input-title" type="text" placeholder="タスクのタイトル">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="input-desc">説明文</label>
+        <textarea class="form-textarea" id="input-desc" rows="3" placeholder="詳細説明（任意）"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="input-priority">優先度</label>
+        <select class="form-select" id="input-priority">
+          <option value="">― なし ―</option>
+          <option value="high">高</option>
+          <option value="mid">中</option>
+          <option value="low">低</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="input-due">期限</label>
+        <input class="form-input" id="input-due" type="date">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-danger" id="btn-delete" hidden>削除</button>
+        <div class="modal-actions-right">
+          <button class="btn btn-secondary" id="btn-cancel">キャンセル</button>
+          <button class="btn btn-primary" id="btn-save" disabled>保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 削除確認ダイアログ -->
+  <div class="dialog-overlay" id="dialog-overlay" hidden>
+    <div class="dialog" role="alertdialog" aria-modal="true">
+      <p class="dialog-message">本当に削除しますか？</p>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" id="dialog-cancel">キャンセル</button>
+        <button class="btn btn-danger" id="dialog-ok">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
