@@ -122,6 +122,36 @@ gh pr create --title "feat: 実装内容 (#{number})" --body "Closes #{number}"
 
 ---
 
+## サーバー起動ルール（厳守）
+
+サーバーを起動する前に、**必ず**そのポートで動いているプロセスを停止すること。
+別のポートで代替起動することは禁止。アプリが指定するデフォルトポートで動かすこと。
+
+| サーバー | ポート | 停止コマンド |
+|---|---|---|
+| バックエンド（Spring Boot） | 8080 | `lsof -ti:8080 \| xargs kill -9` |
+| フロントエンド（Vite） | 5173 | `lsof -ti:5173 \| xargs kill -9` |
+| PostgreSQL（Docker） | 5432 | `docker compose stop db` |
+
+### 起動手順（毎回この順序で実行）
+
+```bash
+# 1. ポート解放（競合時は必ず実行）
+lsof -ti:8080 | xargs kill -9 2>/dev/null || true
+lsof -ti:5173 | xargs kill -9 2>/dev/null || true
+
+# 2. DB起動
+docker compose up -d
+
+# 3. バックエンド起動（別ターミナル）
+cd backend && ./gradlew bootRun
+
+# 4. フロントエンド起動（別ターミナル）
+cd frontend && npm run dev
+```
+
+---
+
 ## プロジェクト技術スタック
 
 | 層 | 技術 |
@@ -137,7 +167,7 @@ gh pr create --title "feat: 実装内容 (#{number})" --body "Closes #{number}"
 ```
 TaskManagement/
 ├── backend/          # Spring Boot アプリ
-├── frontend/         # React + Vite アプリ（未作成）
+├── frontend/         # React + Vite アプリ
 ├── docs/             # 設計ドキュメント
 ├── docker-compose.yml
 └── CLAUDE.md
