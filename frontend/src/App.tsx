@@ -37,7 +37,13 @@ export default function App() {
           エラー: {error}
         </div>
       )}
-      {!loading && !error && <KanbanBoard tasks={tasks} onAddTask={() => setShowCreateModal(true)} />}
+      {!loading && !error && (
+        <KanbanBoard
+          tasks={tasks}
+          onTasksChange={setTasks}
+          onAddTask={() => setShowCreateModal(true)}
+        />
+      )}
       {showCreateModal && (
         <TaskCreateModal
           onClose={() => setShowCreateModal(false)}
