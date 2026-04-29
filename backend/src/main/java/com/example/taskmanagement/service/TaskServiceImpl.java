@@ -81,6 +81,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
+    public void deleteTask(Integer id) {
+        if (!taskRepository.existsById(id)) throw new TaskNotFoundException(id);
+        taskRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
     public void reorderTasks(List<TaskReorderItemDto> items) {
         List<Integer> ids = items.stream().map(TaskReorderItemDto::id).toList();
         Map<Integer, Task> taskMap = taskRepository.findAllById(ids).stream()
