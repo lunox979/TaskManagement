@@ -12,3 +12,17 @@ export interface Task {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface TaskUpdateRequest {
+  title: string;
+  description: string | null;
+  status: TaskStatus;
+  priority: TaskPriority | null;
+  dueDate: string | null;
+}
+
+export interface TaskReorderItem {
+  id: number;
+  orderIndex: number;
+  status: TaskStatus;
+}

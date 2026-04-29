@@ -1,4 +1,4 @@
-import type { Task, TaskPriority, TaskStatus } from "../types/task";
+import type { Task, TaskPriority, TaskReorderItem, TaskStatus, TaskUpdateRequest } from "../types/task";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -24,4 +24,23 @@ export async function createTask(request: CreateTaskRequest): Promise<Task> {
   });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
+}
+
+export async function updateTask(id: number, request: TaskUpdateRequest): Promise<Task> {
+  const res = await fetch(`${BASE_URL}/api/tasks/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function reorderTasks(items: TaskReorderItem[]): Promise<void> {
+  const res = await fetch(`${BASE_URL}/api/tasks/reorder`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(items),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
 }

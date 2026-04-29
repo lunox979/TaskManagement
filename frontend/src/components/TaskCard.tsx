@@ -13,14 +13,46 @@ function formatDate(iso: string): string {
 
 interface Props {
   task: Task;
+  isDragging: boolean;
+  onClick: () => void;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+  onDragOver: (above: boolean) => void;
 }
 
-export default function TaskCard({ task }: Props) {
+export default function TaskCard({
+  task,
+  isDragging,
+  onClick,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+}: Props) {
   const priority = task.priority ? PRIORITY_MAP[task.priority] : null;
   const hasMeta = priority !== null || task.dueDate !== null;
 
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    onDragOver(e.clientY < midY);
+  }
+
   return (
-    <div className="bg-white rounded-md shadow-sm p-3 cursor-default">
+    <div
+      draggable
+      onClick={onClick}
+      onDragStart={(e) => {
+        e.stopPropagation();
+        onDragStart();
+      }}
+      onDragEnd={onDragEnd}
+      onDragOver={handleDragOver}
+      className={`bg-white rounded-md shadow-sm p-3 cursor-pointer select-none transition-opacity hover:shadow-md ${
+        isDragging ? "opacity-40" : "opacity-100"
+      }`}
+    >
       <p className="text-sm font-medium text-gray-800 leading-snug">{task.title}</p>
       {hasMeta && (
         <div className="flex items-center gap-2 mt-2">
