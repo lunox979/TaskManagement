@@ -1,5 +1,11 @@
 import type { Task, TaskStatus } from "../types/task";
+import type { SortKey } from "./KanbanBoard";
 import TaskCard from "./TaskCard";
+
+interface SortState {
+  key: SortKey | null;
+  asc: boolean;
+}
 
 interface DropIndicator {
   beforeTaskId: number | null;
@@ -12,6 +18,8 @@ interface Props {
   tasks: Task[];
   draggingId: number | null;
   dropIndicator: DropIndicator | null;
+  sortState: SortState;
+  onSort: (key: SortKey) => void;
   onAddTask?: () => void;
   onTaskClick: (task: Task) => void;
   onDragStart: (taskId: number) => void;
@@ -21,12 +29,19 @@ interface Props {
   onDrop: (status: TaskStatus) => void;
 }
 
+const SORT_BUTTONS: { key: SortKey; label: string }[] = [
+  { key: "priority", label: "優先度" },
+  { key: "dueDate", label: "期限" },
+];
+
 export default function KanbanColumn({
   label,
   status,
   tasks,
   draggingId,
   dropIndicator,
+  sortState,
+  onSort,
   onAddTask,
   onTaskClick,
   onDragStart,
@@ -47,8 +62,7 @@ export default function KanbanColumn({
     onDrop(status);
   }
 
-  const showEndIndicator =
-    isDropTarget && dropIndicator?.beforeTaskId == null;
+  const showEndIndicator = isDropTarget && dropIndicator?.beforeTaskId == null;
 
   return (
     <div
@@ -58,18 +72,37 @@ export default function KanbanColumn({
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="flex items-center justify-between px-1 pb-1">
-        <span className="font-bold text-sm text-gray-700">{label}</span>
-        <span className="bg-[#c2c7d0] text-xs font-bold px-2 py-0.5 rounded-full min-w-[22px] text-center text-gray-600">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-1 pb-1">
+        <span className="font-bold text-sm text-gray-700 shrink-0">{label}</span>
+        <span className="bg-[#c2c7d0] text-xs font-bold px-2 py-0.5 rounded-full min-w-[22px] text-center text-gray-600 shrink-0">
           {tasks.length}
         </span>
+        <div className="flex items-center gap-1 ml-auto">
+          {SORT_BUTTONS.map(({ key, label: btnLabel }) => {
+            const isActive = sortState.key === key;
+            const arrow = isActive ? (sortState.asc ? "↑" : "↓") : "";
+            return (
+              <button
+                key={key}
+                onClick={() => onSort(key)}
+                className={`text-xs px-1.5 py-0.5 rounded transition-colors whitespace-nowrap ${
+                  isActive
+                    ? "bg-blue-500 text-white font-semibold"
+                    : "bg-[#c2c7d0] text-gray-600 hover:bg-[#b0b5bf]"
+                }`}
+              >
+                {btnLabel}{arrow}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
+      {/* Task list */}
       <div className="flex flex-col">
         {tasks.map((task) => {
-          const showAbove =
-            isDropTarget && dropIndicator?.beforeTaskId === task.id;
-
+          const showAbove = isDropTarget && dropIndicator?.beforeTaskId === task.id;
           return (
             <div key={task.id}>
               {showAbove && <DropLine />}
@@ -103,7 +136,5 @@ export default function KanbanColumn({
 }
 
 function DropLine() {
-  return (
-    <div className="h-0.5 bg-blue-400 rounded-full mx-1 mb-2 shadow-sm" />
-  );
+  return <div className="h-0.5 bg-blue-400 rounded-full mx-1 mb-2 shadow-sm" />;
 }

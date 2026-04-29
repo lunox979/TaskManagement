@@ -10,9 +10,35 @@ const COLUMNS: { status: TaskStatus; label: string }[] = [
   { status: "done", label: "完了" },
 ];
 
+export type SortKey = "priority" | "dueDate";
+
+interface SortState {
+  key: SortKey | null;
+  asc: boolean;
+}
+
 interface DropIndicator {
   beforeTaskId: number | null;
   status: TaskStatus;
+}
+
+const PRIORITY_ORDER: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+function sortColumnTasks(tasks: Task[], sort: SortState): Task[] {
+  if (!sort.key) return tasks;
+  return [...tasks].sort((a, b) => {
+    if (sort.key === "priority") {
+      const aVal = a.priority != null ? (PRIORITY_ORDER[a.priority] ?? 3) : 3;
+      const bVal = b.priority != null ? (PRIORITY_ORDER[b.priority] ?? 3) : 3;
+      return sort.asc ? aVal - bVal : bVal - aVal;
+    } else {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return sort.asc ? 1 : -1;
+      if (!b.dueDate) return sort.asc ? -1 : 1;
+      const cmp = a.dueDate.localeCompare(b.dueDate);
+      return sort.asc ? cmp : -cmp;
+    }
+  });
 }
 
 interface Props {
@@ -25,16 +51,48 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [draggingId, setDraggingId] = useState<number | null>(null);
   const [dropIndicator, setDropIndicator] = useState<DropIndicator | null>(null);
+  const [sortStates, setSortStates] = useState<Record<TaskStatus, SortState>>({
+    todo: { key: null, asc: true },
+    in_progress: { key: null, asc: true },
+    done: { key: null, asc: true },
+  });
   const dragIdRef = useRef<number | null>(null);
 
   const grouped = Object.fromEntries(
-    COLUMNS.map(({ status }) => [
-      status,
-      [...tasks.filter((t) => t.status === status)].sort(
+    COLUMNS.map(({ status }) => {
+      const colTasks = [...tasks.filter((t) => t.status === status)].sort(
         (a, b) => a.orderIndex - b.orderIndex
-      ),
-    ])
+      );
+      return [status, sortColumnTasks(colTasks, sortStates[status])];
+    })
   ) as Record<TaskStatus, Task[]>;
+
+  function handleSort(status: TaskStatus, key: SortKey) {
+    const current = sortStates[status];
+    const asc = current.key === key ? !current.asc : true;
+    const newSort: SortState = { key, asc };
+
+    setSortStates((prev) => ({ ...prev, [status]: newSort }));
+
+    const colTasks = [...tasks.filter((t) => t.status === status)].sort(
+      (a, b) => a.orderIndex - b.orderIndex
+    );
+    const sorted = sortColumnTasks(colTasks, newSort);
+    const reorderItems: TaskReorderItem[] = sorted.map((t, i) => ({
+      id: t.id,
+      orderIndex: i,
+      status: t.status,
+    }));
+
+    const updatedMap = new Map(reorderItems.map((r) => [r.id, r]));
+    const nextTasks = tasks.map((t) => {
+      const updated = updatedMap.get(t.id);
+      return updated ? { ...t, orderIndex: updated.orderIndex } : t;
+    });
+    onTasksChange(nextTasks);
+
+    reorderTasks(reorderItems).catch(() => onTasksChange(tasks));
+  }
 
   function handleDragStart(taskId: number) {
     dragIdRef.current = taskId;
@@ -81,13 +139,10 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
     targetColTasks.splice(insertIdx, 0, { ...dragged, status: targetStatus });
 
     const reorderItems: TaskReorderItem[] = [];
-
-    // Recalculate target column orderIndex
     targetColTasks.forEach((t, i) => {
       reorderItems.push({ id: t.id, orderIndex: i, status: targetStatus });
     });
 
-    // Recalculate source column if different
     if (dragged.status !== targetStatus) {
       grouped[dragged.status]
         .filter((t) => t.id !== id)
@@ -96,7 +151,6 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
         });
     }
 
-    // Apply optimistic update
     const updatedMap = new Map(reorderItems.map((r) => [r.id, r]));
     const nextTasks = tasks.map((t) => {
       const updated = updatedMap.get(t.id);
@@ -105,14 +159,22 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
     });
     onTasksChange(nextTasks);
 
+    // ドラッグ後はそのカラムのソートをリセット
+    if (dragged.status !== targetStatus) {
+      setSortStates((prev) => ({
+        ...prev,
+        [targetStatus]: { key: null, asc: true },
+        [dragged.status]: { key: null, asc: true },
+      }));
+    } else {
+      setSortStates((prev) => ({ ...prev, [targetStatus]: { key: null, asc: true } }));
+    }
+
     setDraggingId(null);
     setDropIndicator(null);
     dragIdRef.current = null;
 
-    reorderTasks(reorderItems).catch(() => {
-      // Revert on failure
-      onTasksChange(tasks);
-    });
+    reorderTasks(reorderItems).catch(() => onTasksChange(tasks));
   }
 
   async function handleSaveTask(id: number, request: TaskUpdateRequest) {
@@ -132,6 +194,8 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
             tasks={grouped[status]}
             draggingId={draggingId}
             dropIndicator={dropIndicator}
+            sortState={sortStates[status]}
+            onSort={(key) => handleSort(status, key)}
             onAddTask={status === "todo" ? onAddTask : undefined}
             onTaskClick={setSelectedTask}
             onDragStart={handleDragStart}
