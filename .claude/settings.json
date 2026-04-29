@@ -51,8 +51,6 @@
       "Bash(DROP TABLE*)",
       "Bash(truncate *)",
       "Bash(TRUNCATE *)",
-      "Bash(kill *)",
-      "Bash(kill)",
       "Bash(killall *)",
       "Bash(shutdown *)",
       "Bash(shutdown)",
