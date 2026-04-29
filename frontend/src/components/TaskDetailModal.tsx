@@ -29,7 +29,6 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
   const [dueDate, setDueDate] = useState(task.dueDate ?? "");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -73,18 +72,11 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
     } catch {
       setError("削除に失敗しました");
       setDeleting(false);
-      setConfirmDelete(false);
     }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Escape") {
-      if (confirmDelete) {
-        setConfirmDelete(false);
-      } else {
-        onClose();
-      }
-    }
+    if (e.key === "Escape") onClose();
   }
 
   return (
@@ -200,34 +192,13 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
           {/* Delete button (left side) */}
-          <div className="flex items-center gap-2">
-            {confirmDelete ? (
-              <>
-                <span className="text-sm text-red-600 font-medium">本当に削除しますか？</span>
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="px-3 py-1.5 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
-                >
-                  {deleting ? "削除中..." : "はい"}
-                </button>
-                <button
-                  onClick={() => setConfirmDelete(false)}
-                  disabled={deleting}
-                  className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  いいえ
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => setConfirmDelete(true)}
-                className="px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
-              >
-                削除
-              </button>
-            )}
-          </div>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors"
+          >
+            {deleting ? "削除中..." : "削除"}
+          </button>
 
           {/* Save/Cancel buttons (right side) */}
           <div className="flex gap-2">

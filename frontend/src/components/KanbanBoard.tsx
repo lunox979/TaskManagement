@@ -204,6 +204,7 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
             onSort={(key) => handleSort(status, key)}
             onAddTask={status === "todo" ? onAddTask : undefined}
             onTaskClick={setSelectedTask}
+            onTaskDelete={handleDeleteTask}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragOverColumn={handleDragOverColumn}
