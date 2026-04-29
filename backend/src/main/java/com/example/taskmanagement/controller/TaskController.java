@@ -1,7 +1,9 @@
 package com.example.taskmanagement.controller;
 
 import com.example.taskmanagement.dto.TaskCreateRequestDto;
+import com.example.taskmanagement.dto.TaskReorderItemDto;
 import com.example.taskmanagement.dto.TaskResponseDto;
+import com.example.taskmanagement.dto.TaskUpdateRequestDto;
 import com.example.taskmanagement.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -42,5 +44,18 @@ public class TaskController {
                 .buildAndExpand(created.id())
                 .toUri();
         return ResponseEntity.created(location).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TaskResponseDto> updateTask(
+            @PathVariable Integer id,
+            @Valid @RequestBody TaskUpdateRequestDto request) {
+        return ResponseEntity.ok(taskService.updateTask(id, request));
+    }
+
+    @PostMapping("/reorder")
+    public ResponseEntity<Void> reorderTasks(@RequestBody List<TaskReorderItemDto> items) {
+        taskService.reorderTasks(items);
+        return ResponseEntity.ok().build();
     }
 }
