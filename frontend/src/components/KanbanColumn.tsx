@@ -23,6 +23,8 @@ interface Props {
   onAddTask?: () => void;
   onTaskClick: (task: Task) => void;
   onTaskDelete: (taskId: number) => void;
+  onTaskStatusChange: (taskId: number, nextStatus: TaskStatus) => void;
+  onTaskTitleChange: (taskId: number, title: string) => void;
   onDragStart: (taskId: number) => void;
   onDragEnd: () => void;
   onDragOverColumn: (status: TaskStatus) => void;
@@ -46,6 +48,8 @@ export default function KanbanColumn({
   onAddTask,
   onTaskClick,
   onTaskDelete,
+  onTaskStatusChange,
+  onTaskTitleChange,
   onDragStart,
   onDragEnd,
   onDragOverColumn,
@@ -114,6 +118,8 @@ export default function KanbanColumn({
                   isDragging={task.id === draggingId}
                   onClick={() => onTaskClick(task)}
                   onDelete={() => onTaskDelete(task.id)}
+                  onStatusChange={(nextStatus) => onTaskStatusChange(task.id, nextStatus)}
+                  onTitleChange={(title) => onTaskTitleChange(task.id, title)}
                   onDragStart={() => onDragStart(task.id)}
                   onDragEnd={onDragEnd}
                   onDragOver={(above) => onDragOverCard(task.id, status, above)}
