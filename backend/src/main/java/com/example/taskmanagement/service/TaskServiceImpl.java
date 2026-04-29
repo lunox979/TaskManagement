@@ -50,10 +50,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public TaskResponseDto createTask(TaskCreateRequestDto request) {
-        int nextOrder = taskRepository.findAll().stream()
-                .mapToInt(Task::getOrderIndex)
-                .max()
-                .orElse(0) + 1;
+        int nextOrder = taskRepository.findMaxOrderIndex() + 1;
 
         Task task = new Task();
         task.setTitle(request.title());
@@ -73,7 +70,9 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new TaskNotFoundException(id));
         task.setTitle(request.title());
         task.setDescription(request.description());
-        if (request.status() != null) task.setStatus(request.status());
+        if (request.status() != null) {
+            task.setStatus(request.status());
+        }
         task.setPriority(request.priority());
         task.setDueDate(request.dueDate());
         return toDto(taskRepository.save(task));
@@ -82,8 +81,9 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public void deleteTask(Integer id) {
-        if (!taskRepository.existsById(id)) throw new TaskNotFoundException(id);
-        taskRepository.deleteById(id);
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException(id));
+        taskRepository.delete(task);
     }
 
     @Override
@@ -94,9 +94,13 @@ public class TaskServiceImpl implements TaskService {
                 .collect(Collectors.toMap(Task::getId, t -> t));
         for (TaskReorderItemDto item : items) {
             Task task = taskMap.get(item.id());
-            if (task == null) throw new TaskNotFoundException(item.id());
+            if (task == null) {
+                throw new TaskNotFoundException(item.id());
+            }
             task.setOrderIndex(item.orderIndex());
-            if (item.status() != null) task.setStatus(item.status());
+            if (item.status() != null) {
+                task.setStatus(item.status());
+            }
         }
         taskRepository.saveAll(taskMap.values());
     }

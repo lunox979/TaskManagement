@@ -3,14 +3,14 @@ import type { TaskPriority, TaskStatus } from "../types/task";
 import type { CreateTaskRequest } from "../api/taskApi";
 
 interface Props {
+  initialStatus: TaskStatus;
   onClose: () => void;
   onSubmit: (request: CreateTaskRequest) => Promise<void>;
 }
 
-export default function TaskCreateModal({ onClose, onSubmit }: Props) {
+export default function TaskCreateModal({ initialStatus, onClose, onSubmit }: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<TaskStatus>("todo");
   const [priority, setPriority] = useState<TaskPriority | "">("");
   const [dueDate, setDueDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -25,7 +25,7 @@ export default function TaskCreateModal({ onClose, onSubmit }: Props) {
       await onSubmit({
         title: title.trim(),
         description: description.trim() || undefined,
-        status,
+        status: initialStatus,
         priority: priority || undefined,
         dueDate: dueDate || undefined,
       });
@@ -43,7 +43,7 @@ export default function TaskCreateModal({ onClose, onSubmit }: Props) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
-        <h2 className="text-lg font-bold text-gray-800 mb-5">タスクを新規登録</h2>
+        <h2 className="text-lg font-bold text-gray-800 mb-5">タスクを追加</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -73,19 +73,6 @@ export default function TaskCreateModal({ onClose, onSubmit }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ステータス</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as TaskStatus)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="todo">未着手</option>
-                <option value="in_progress">進行中</option>
-                <option value="done">完了</option>
-              </select>
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">優先度</label>
               <select
                 value={priority}
@@ -98,16 +85,16 @@ export default function TaskCreateModal({ onClose, onSubmit }: Props) {
                 <option value="high">高</option>
               </select>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">期日</label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">期日</label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
 
           {error && (
@@ -127,7 +114,7 @@ export default function TaskCreateModal({ onClose, onSubmit }: Props) {
               disabled={submitting || !title.trim()}
               className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? "登録中..." : "登録"}
+              {submitting ? "保存中..." : "保存"}
             </button>
           </div>
         </form>

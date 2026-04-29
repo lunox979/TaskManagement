@@ -44,7 +44,7 @@ function sortColumnTasks(tasks: Task[], sort: SortState): Task[] {
 interface Props {
   tasks: Task[];
   onTasksChange: (tasks: Task[]) => void;
-  onAddTask: () => void;
+  onAddTask: (status: TaskStatus) => void;
 }
 
 export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) {
@@ -202,7 +202,7 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
             dropIndicator={dropIndicator}
             sortState={sortStates[status]}
             onSort={(key) => handleSort(status, key)}
-            onAddTask={status === "todo" ? onAddTask : undefined}
+            onAddTask={() => onAddTask(status)}
             onTaskClick={setSelectedTask}
             onTaskDelete={handleDeleteTask}
             onDragStart={handleDragStart}
