@@ -14,4 +14,5 @@ public interface TaskService {
     TaskResponseDto createTask(TaskCreateRequestDto request);
     TaskResponseDto updateTask(Integer id, TaskUpdateRequestDto request);
     void reorderTasks(List<TaskReorderItemDto> items);
+    void deleteTask(Integer id);
 }

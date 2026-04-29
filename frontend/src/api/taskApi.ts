@@ -36,6 +36,11 @@ export async function updateTask(id: number, request: TaskUpdateRequest): Promis
   return res.json();
 }
 
+export async function deleteTask(id: number): Promise<void> {
+  const res = await fetch(`${BASE_URL}/api/tasks/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+}
+
 export async function reorderTasks(items: TaskReorderItem[]): Promise<void> {
   const res = await fetch(`${BASE_URL}/api/tasks/reorder`, {
     method: "POST",

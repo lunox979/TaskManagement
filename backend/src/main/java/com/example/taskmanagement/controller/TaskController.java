@@ -53,6 +53,12 @@ public class TaskController {
         return ResponseEntity.ok(taskService.updateTask(id, request));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Integer id) {
+        taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/reorder")
     public ResponseEntity<Void> reorderTasks(@RequestBody List<TaskReorderItemDto> items) {
         taskService.reorderTasks(items);

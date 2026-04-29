@@ -18,15 +18,17 @@ interface Props {
   task: Task;
   onClose: () => void;
   onSave: (id: number, request: TaskUpdateRequest) => Promise<void>;
+  onDelete: (id: number) => Promise<void>;
 }
 
-export default function TaskDetailModal({ task, onClose, onSave }: Props) {
+export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Props) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description ?? "");
   const [status, setStatus] = useState<TaskStatus>(task.status);
   const [priority, setPriority] = useState<TaskPriority | "">(task.priority ?? "");
   const [dueDate, setDueDate] = useState(task.dueDate ?? "");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -58,6 +60,18 @@ export default function TaskDetailModal({ task, onClose, onSave }: Props) {
       setError("保存に失敗しました");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    setError(null);
+    try {
+      await onDelete(task.id);
+      onClose();
+    } catch {
+      setError("削除に失敗しました");
+      setDeleting(false);
     }
   }
 
@@ -176,20 +190,32 @@ export default function TaskDetailModal({ task, onClose, onSave }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 px-6 py-4 border-t border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+          {/* Delete button (left side) */}
           <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors"
           >
-            キャンセル
+            {deleting ? "削除中..." : "削除"}
           </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-          >
-            {saving ? "保存中..." : "保存"}
-          </button>
+
+          {/* Save/Cancel buttons (right side) */}
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              キャンセル
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {saving ? "保存中..." : "保存"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

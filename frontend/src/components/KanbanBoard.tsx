@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { Task, TaskReorderItem, TaskStatus, TaskUpdateRequest } from "../types/task";
-import { reorderTasks, updateTask } from "../api/taskApi";
+import { deleteTask, reorderTasks, updateTask } from "../api/taskApi";
 import KanbanColumn from "./KanbanColumn";
 import TaskDetailModal from "./TaskDetailModal";
 
@@ -183,6 +183,12 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
     setSelectedTask(updated);
   }
 
+  async function handleDeleteTask(id: number) {
+    await deleteTask(id);
+    onTasksChange(tasks.filter((t) => t.id !== id));
+    setSelectedTask(null);
+  }
+
   return (
     <>
       <div className="flex gap-5 p-6 overflow-x-auto items-start flex-1 bg-[#f4f5f7]">
@@ -198,6 +204,7 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
             onSort={(key) => handleSort(status, key)}
             onAddTask={status === "todo" ? onAddTask : undefined}
             onTaskClick={setSelectedTask}
+            onTaskDelete={handleDeleteTask}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragOverColumn={handleDragOverColumn}
@@ -212,6 +219,7 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
           onSave={handleSaveTask}
+          onDelete={handleDeleteTask}
         />
       )}
     </>
