@@ -9,9 +9,10 @@ const COLUMNS: { status: TaskStatus; label: string }[] = [
 
 interface Props {
   tasks: Task[];
+  onAddTask: () => void;
 }
 
-export default function KanbanBoard({ tasks }: Props) {
+export default function KanbanBoard({ tasks, onAddTask }: Props) {
   const grouped = Object.fromEntries(
     COLUMNS.map(({ status }) => [
       status,
@@ -22,7 +23,12 @@ export default function KanbanBoard({ tasks }: Props) {
   return (
     <div className="flex gap-5 p-6 overflow-x-auto items-start flex-1 bg-[#f4f5f7]">
       {COLUMNS.map(({ status, label }) => (
-        <KanbanColumn key={status} label={label} tasks={grouped[status]} />
+        <KanbanColumn
+          key={status}
+          label={label}
+          tasks={grouped[status]}
+          onAddTask={status === "todo" ? onAddTask : undefined}
+        />
       ))}
     </div>
   );

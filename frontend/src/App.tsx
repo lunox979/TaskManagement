@@ -26,7 +26,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header onCreateTask={() => setShowCreateModal(true)} />
+      <Header />
       {loading && (
         <div className="flex-1 flex items-center justify-center text-gray-500">
           読み込み中...
@@ -37,7 +37,7 @@ export default function App() {
           エラー: {error}
         </div>
       )}
-      {!loading && !error && <KanbanBoard tasks={tasks} />}
+      {!loading && !error && <KanbanBoard tasks={tasks} onAddTask={() => setShowCreateModal(true)} />}
       {showCreateModal && (
         <TaskCreateModal
           onClose={() => setShowCreateModal(false)}

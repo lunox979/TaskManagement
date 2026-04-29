@@ -4,9 +4,10 @@ import TaskCard from "./TaskCard";
 interface Props {
   label: string;
   tasks: Task[];
+  onAddTask?: () => void;
 }
 
-export default function KanbanColumn({ label, tasks }: Props) {
+export default function KanbanColumn({ label, tasks, onAddTask }: Props) {
   return (
     <div className="flex-none w-72 bg-[#ebecf0] rounded-lg p-3 flex flex-col gap-2">
       <div className="flex items-center justify-between px-1 pb-1">
@@ -20,6 +21,15 @@ export default function KanbanColumn({ label, tasks }: Props) {
           <TaskCard key={task.id} task={task} />
         ))}
       </div>
+      {onAddTask && (
+        <button
+          onClick={onAddTask}
+          className="flex items-center gap-1.5 text-gray-500 hover:text-gray-700 hover:bg-[#dcdfe4] text-sm px-2 py-1.5 rounded-md transition-colors mt-1"
+        >
+          <span className="text-base leading-none">＋</span>
+          タスクを追加
+        </button>
+      )}
     </div>
   );
 }
