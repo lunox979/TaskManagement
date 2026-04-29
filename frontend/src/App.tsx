@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Task } from "./types/task";
+import type { Task, TaskStatus } from "./types/task";
 import { fetchAllTasks, createTask } from "./api/taskApi";
 import type { CreateTaskRequest } from "./api/taskApi";
 import Header from "./components/Header";
@@ -10,7 +10,7 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createModalStatus, setCreateModalStatus] = useState<TaskStatus | false>(false);
 
   useEffect(() => {
     fetchAllTasks()
@@ -41,12 +41,13 @@ export default function App() {
         <KanbanBoard
           tasks={tasks}
           onTasksChange={setTasks}
-          onAddTask={() => setShowCreateModal(true)}
+          onAddTask={(status) => setCreateModalStatus(status)}
         />
       )}
-      {showCreateModal && (
+      {createModalStatus !== false && (
         <TaskCreateModal
-          onClose={() => setShowCreateModal(false)}
+          initialStatus={createModalStatus}
+          onClose={() => setCreateModalStatus(false)}
           onSubmit={handleCreateTask}
         />
       )}

@@ -30,6 +30,7 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
     }
   }
 
-  async function handleDelete() {
+  async function handleDeleteConfirm() {
     setDeleting(true);
     setError(null);
     try {
@@ -72,6 +73,7 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
     } catch {
       setError("削除に失敗しました");
       setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   }
 
@@ -88,7 +90,7 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
       <div className="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-base font-bold text-gray-800">タスク詳細</h2>
+          <h2 className="text-base font-bold text-gray-800">タスクを編集</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-xl leading-none px-1"
@@ -191,16 +193,14 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
 
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-          {/* Delete button (left side) */}
           <button
-            onClick={handleDelete}
+            onClick={() => setShowDeleteConfirm(true)}
             disabled={deleting}
             className="px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors"
           >
-            {deleting ? "削除中..." : "削除"}
+            削除
           </button>
 
-          {/* Save/Cancel buttons (right side) */}
           <div className="flex gap-2">
             <button
               onClick={onClose}
@@ -218,6 +218,31 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
           </div>
         </div>
       </div>
+
+      {/* 削除確認ダイアログ */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 flex flex-col gap-4">
+            <p className="text-sm text-gray-700 font-medium">本当に削除しますか？</p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+                className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {deleting ? "削除中..." : "OK"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
