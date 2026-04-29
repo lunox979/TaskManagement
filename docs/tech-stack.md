@@ -16,19 +16,19 @@
 
 ## 技術選定
 
-| レイヤー | 技術 | バージョン目安 | 備考 |
+| レイヤー | 技術 | バージョン | 備考 |
 |---|---|---|---|
-| フロントエンド | React | 18.x | Next.js は対象外 |
-| フロントエンド言語 | TypeScript | 5.x | |
-| フロントエンド ビルドツール | Vite | 5.x | 高速な開発サーバー・バンドラー |
-| スタイリング | Tailwind CSS | 3.x | |
+| フロントエンド | React | 19.2.5 | Next.js は対象外 |
+| フロントエンド言語 | TypeScript | 6.0.3 | |
+| フロントエンド ビルドツール | Vite | 5.4.21 | 高速な開発サーバー・バンドラー |
+| スタイリング | Tailwind CSS | 3.4.19 | |
 | バックエンド言語 | Java | 25 (LTS) | |
-| バックエンドフレームワーク | Spring Boot | 4.0.x | REST API サーバー |
+| バックエンドフレームワーク | Spring Boot | 4.0.6 | REST API サーバー |
 | ORM | Spring Data JPA / Hibernate | Spring Boot 同梱 | |
-| データベース | PostgreSQL | 16.x | |
-| ビルドツール (BE) | Gradle | 9.x | |
-| APIクライアント (FE) | Axios または fetch API | — | バックエンドとの通信 |
-| スタイリング | Tailwind CSS | 3.x | |
+| データベース | PostgreSQL | 17 | Docker イメージ: postgres:17 |
+| ビルドツール (BE) | Gradle | 9.4.1 | Gradle Wrapper 管理 |
+| APIクライアント (FE) | fetch API | — | バックエンドとの通信 |
+| コンテナ | Docker / Docker Compose | — | DB のみコンテナ化 |
 | 実行環境 | ローカル開発環境 | — | |
 
 ---
