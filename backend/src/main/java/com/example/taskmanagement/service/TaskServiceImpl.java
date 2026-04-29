@@ -1,5 +1,6 @@
 package com.example.taskmanagement.service;
 
+import com.example.taskmanagement.dto.TaskCreateRequestDto;
 import com.example.taskmanagement.dto.TaskResponseDto;
 import com.example.taskmanagement.entity.Task;
 import com.example.taskmanagement.exception.TaskNotFoundException;
@@ -40,6 +41,25 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new TaskNotFoundException(id));
         return toDto(task);
+    }
+
+    @Override
+    @Transactional
+    public TaskResponseDto createTask(TaskCreateRequestDto request) {
+        int nextOrder = taskRepository.findAll().stream()
+                .mapToInt(Task::getOrderIndex)
+                .max()
+                .orElse(0) + 1;
+
+        Task task = new Task();
+        task.setTitle(request.title());
+        task.setDescription(request.description());
+        task.setStatus(request.status() != null ? request.status() : "todo");
+        task.setPriority(request.priority());
+        task.setDueDate(request.dueDate());
+        task.setOrderIndex(nextOrder);
+
+        return toDto(taskRepository.save(task));
     }
 
     private TaskResponseDto toDto(Task task) {
