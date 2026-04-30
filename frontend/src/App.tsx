@@ -26,7 +26,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      <Header onAddTask={() => setCreateModalStatus("todo")} />
       {loading && (
         <div className="flex-1 flex items-center justify-center text-gray-500">
           読み込み中...

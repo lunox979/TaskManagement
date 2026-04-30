@@ -1,6 +1,9 @@
 import type { Task, TaskStatus } from "../types/task";
 import type { SortKey } from "./KanbanBoard";
 import TaskCard from "./TaskCard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Circle, Timer, CheckCircle2, Plus, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 
 interface SortState {
   key: SortKey | null;
@@ -37,6 +40,28 @@ const SORT_BUTTONS: { key: SortKey; label: string }[] = [
   { key: "dueDate", label: "期限" },
 ];
 
+const STATUS_CONFIG: Record<TaskStatus, {
+  Icon: React.ElementType;
+  topBorder: string;
+  iconColor: string;
+}> = {
+  todo: {
+    Icon: Circle,
+    topBorder: "border-t-slate-400",
+    iconColor: "text-slate-400",
+  },
+  in_progress: {
+    Icon: Timer,
+    topBorder: "border-t-indigo-500",
+    iconColor: "text-indigo-500",
+  },
+  done: {
+    Icon: CheckCircle2,
+    topBorder: "border-t-emerald-500",
+    iconColor: "text-emerald-500",
+  },
+};
+
 export default function KanbanColumn({
   label,
   status,
@@ -57,6 +82,7 @@ export default function KanbanColumn({
   onDrop,
 }: Props) {
   const isDropTarget = dropIndicator?.status === status;
+  const { Icon, topBorder, iconColor } = STATUS_CONFIG[status];
 
   function handleDragOver(e: React.DragEvent) {
     e.preventDefault();
@@ -72,41 +98,41 @@ export default function KanbanColumn({
 
   return (
     <div
-      className={`flex-none w-72 rounded-lg p-3 flex flex-col gap-2 transition-colors ${
-        isDropTarget ? "bg-[#dfe1e6]" : "bg-[#ebecf0]"
+      className={`flex-none w-72 rounded-xl border-t-4 ${topBorder} bg-white border border-slate-200 shadow-sm flex flex-col gap-2 transition-colors ${
+        isDropTarget ? "bg-slate-50" : ""
       }`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 px-1 pb-1">
-        <span className="font-bold text-sm text-gray-700 shrink-0">{label}</span>
-        <span className="bg-[#c2c7d0] text-xs font-bold px-2 py-0.5 rounded-full min-w-[22px] text-center text-gray-600 shrink-0">
+      <div className="flex items-center gap-2 px-4 pt-4 pb-2">
+        <Icon className={`w-4 h-4 ${iconColor} shrink-0`} />
+        <span className="font-semibold text-sm text-slate-700 shrink-0">{label}</span>
+        <Badge variant="secondary" className="text-xs font-medium shrink-0">
           {tasks.length}
-        </span>
-        <div className="flex items-center gap-1 ml-auto">
+        </Badge>
+        <div className="flex items-center gap-0.5 ml-auto">
           {SORT_BUTTONS.map(({ key, label: btnLabel }) => {
             const isActive = sortState.key === key;
-            const arrow = isActive ? (sortState.asc ? "↑" : "↓") : "";
+            const SortIcon = isActive ? (sortState.asc ? ArrowUp : ArrowDown) : ArrowUpDown;
             return (
-              <button
+              <Button
                 key={key}
+                variant={isActive ? "default" : "ghost"}
+                size="sm"
                 onClick={() => onSort(key)}
-                className={`text-xs px-1.5 py-0.5 rounded transition-colors whitespace-nowrap ${
-                  isActive
-                    ? "bg-blue-500 text-white font-semibold"
-                    : "bg-[#c2c7d0] text-gray-600 hover:bg-[#b0b5bf]"
-                }`}
+                className={`h-7 px-2 text-xs gap-1 ${isActive ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "text-slate-500"}`}
               >
-                {btnLabel}{arrow}
-              </button>
+                <SortIcon className="w-3 h-3" />
+                {btnLabel}
+              </Button>
             );
           })}
         </div>
       </div>
 
       {/* Task list */}
-      <div className="flex flex-col">
+      <div className="flex flex-col px-3">
         {tasks.map((task) => {
           const showAbove = isDropTarget && dropIndicator?.beforeTaskId === task.id;
           return (
@@ -132,18 +158,22 @@ export default function KanbanColumn({
       </div>
 
       {onAddTask && (
-        <button
-          onClick={onAddTask}
-          className="flex items-center gap-1.5 text-gray-500 hover:text-gray-700 hover:bg-[#dcdfe4] text-sm px-2 py-1.5 rounded-md transition-colors mt-1"
-        >
-          <span className="text-base leading-none">＋</span>
-          タスクを追加
-        </button>
+        <div className="px-3 pb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onAddTask}
+            className="w-full justify-start gap-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 h-8"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            タスクを追加
+          </Button>
+        </div>
       )}
     </div>
   );
 }
 
 function DropLine() {
-  return <div className="h-0.5 bg-blue-400 rounded-full mx-1 mb-2 shadow-sm" />;
+  return <div className="h-0.5 bg-indigo-400 rounded-full mx-1 mb-2 shadow-sm" />;
 }
