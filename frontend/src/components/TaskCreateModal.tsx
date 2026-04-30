@@ -1,6 +1,24 @@
 import { useState } from "react";
 import type { TaskPriority, TaskStatus } from "../types/task";
 import type { CreateTaskRequest } from "../api/taskApi";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   initialStatus: TaskStatus;
@@ -38,87 +56,78 @@ export default function TaskCreateModal({ initialStatus, onClose, onSubmit }: Pr
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
-        <h2 className="text-lg font-bold text-gray-800 mb-5">タスクを追加</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>タスクを追加</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="create-title">
               タイトル <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
+            </Label>
+            <Input
+              id="create-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="タスクのタイトル"
               maxLength={255}
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">説明</label>
-            <textarea
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="create-description">説明</Label>
+            <Textarea
+              id="create-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               placeholder="タスクの詳細（任意）"
               rows={3}
+              className="resize-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">優先度</label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as TaskPriority | "")}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">なし</option>
-                <option value="low">低</option>
-                <option value="medium">中</option>
-                <option value="high">高</option>
-              </select>
+            <div className="flex flex-col gap-1.5">
+              <Label>優先度</Label>
+              <Select value={priority || "none"} onValueChange={(v) => setPriority(v === "none" ? "" : v as TaskPriority)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">なし</SelectItem>
+                  <SelectItem value="low">低</SelectItem>
+                  <SelectItem value="medium">中</SelectItem>
+                  <SelectItem value="high">高</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">期日</label>
-              <input
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="create-due">期日</Label>
+              <Input
+                id="create-due"
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
-          <div className="flex justify-end gap-3 mt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
-            >
+          <DialogFooter className="mt-1">
+            <Button type="button" variant="outline" onClick={onClose}>
               キャンセル
-            </button>
-            <button
-              type="submit"
-              disabled={submitting || !title.trim()}
-              className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            </Button>
+            <Button type="submit" disabled={submitting || !title.trim()}>
               {submitting ? "保存中..." : "保存"}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

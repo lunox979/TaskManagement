@@ -1,18 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import type { Task, TaskPriority, TaskStatus, TaskUpdateRequest } from "../types/task";
-
-const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
-  { value: "todo", label: "未着手" },
-  { value: "in_progress", label: "進行中" },
-  { value: "done", label: "完了" },
-];
-
-const PRIORITY_OPTIONS: { value: TaskPriority | ""; label: string }[] = [
-  { value: "", label: "なし" },
-  { value: "low", label: "低" },
-  { value: "medium", label: "中" },
-  { value: "high", label: "高" },
-];
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Trash2 } from "lucide-react";
 
 interface Props {
   task: Task;
@@ -36,10 +43,6 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
   useEffect(() => {
     titleRef.current?.focus();
   }, []);
-
-  function handleBackdropClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (e.target === e.currentTarget) onClose();
-  }
 
   async function handleSave() {
     if (!title.trim()) {
@@ -78,171 +81,148 @@ export default function TaskDetailModal({ task, onClose, onSave, onDelete }: Pro
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Escape") onClose();
+    if (e.key === "Escape") {
+      onClose();
+    } else if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA" && !saving && !showDeleteConfirm) {
+      e.preventDefault();
+      handleSave();
+    }
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
-      onClick={handleBackdropClick}
-      onKeyDown={handleKeyDown}
-    >
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-base font-bold text-gray-800">タスクを編集</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none px-1"
-          >
-            ✕
-          </button>
-        </div>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col overflow-hidden" onKeyDown={handleKeyDown}>
+        <DialogHeader>
+          <DialogTitle>タスクを編集</DialogTitle>
+        </DialogHeader>
 
-        {/* Body */}
-        <div className="overflow-y-auto flex-1 px-6 py-5 flex flex-col gap-4">
+        <div className="overflow-y-auto flex-1 flex flex-col gap-4 pr-1">
           {error && (
             <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{error}</p>
           )}
 
-          {/* Title */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <Label htmlFor="detail-title">
               タイトル <span className="text-red-500">*</span>
-            </label>
-            <input
+            </Label>
+            <Input
+              id="detail-title"
               ref={titleRef}
-              type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
               placeholder="タスクのタイトル"
             />
           </div>
 
-          {/* Description */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              説明
-            </label>
-            <textarea
+            <Label htmlFor="detail-description">説明</Label>
+            <Textarea
+              id="detail-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
               placeholder="説明を入力（任意）"
+              className="resize-none"
             />
           </div>
 
-          {/* Status & Priority */}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                ステータス
-              </label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as TaskStatus)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white"
-              >
-                {STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+              <Label>ステータス</Label>
+              <Select value={status} onValueChange={(v) => setStatus(v as TaskStatus)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todo">未着手</SelectItem>
+                  <SelectItem value="in_progress">進行中</SelectItem>
+                  <SelectItem value="done">完了</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                優先度
-              </label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as TaskPriority | "")}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white"
-              >
-                {PRIORITY_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+              <Label>優先度</Label>
+              <Select value={priority || "none"} onValueChange={(v) => setPriority(v === "none" ? "" : v as TaskPriority)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">なし</SelectItem>
+                  <SelectItem value="low">低</SelectItem>
+                  <SelectItem value="medium">中</SelectItem>
+                  <SelectItem value="high">高</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Due Date */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              期日
-            </label>
-            <input
+            <Label htmlFor="detail-due">期日</Label>
+            <Input
+              id="detail-due"
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent w-full"
             />
           </div>
 
-          {/* Metadata */}
-          <div className="text-xs text-gray-400 pt-1 border-t border-gray-100 flex gap-4">
-            <span>作成: {new Date(task.createdAt).toLocaleDateString("ja-JP")}</span>
-            <span>更新: {new Date(task.updatedAt).toLocaleDateString("ja-JP")}</span>
-          </div>
-        </div>
+          <Separator />
 
-        {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            disabled={deleting}
-            className="px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors"
-          >
-            削除
-          </button>
-
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              キャンセル
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
-              {saving ? "保存中..." : "保存"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 削除確認ダイアログ */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 flex flex-col gap-4">
-            <p className="text-sm text-gray-700 font-medium">本当に削除しますか？</p>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={deleting}
-                className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                キャンセル
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                disabled={deleting}
-                className="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
-              >
-                {deleting ? "削除中..." : "OK"}
-              </button>
+          {/* 削除確認 */}
+          {showDeleteConfirm ? (
+            <div className="flex items-center justify-between bg-red-50 rounded-lg px-3 py-2.5">
+              <p className="text-sm text-red-700 font-medium">本当に削除しますか？</p>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                >
+                  キャンセル
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDeleteConfirm}
+                  disabled={deleting}
+                >
+                  {deleting ? "削除中..." : "削除"}
+                </Button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              <p className="text-xs text-slate-400 flex gap-4">
+                <span>作成: {new Date(task.createdAt).toLocaleDateString("ja-JP")}</span>
+                <span>更新: {new Date(task.updatedAt).toLocaleDateString("ja-JP")}</span>
+              </p>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+
+        <DialogFooter className="mt-2 flex items-center justify-between w-full sm:justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={deleting || showDeleteConfirm}
+            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 gap-1.5"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            削除
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose}>
+              キャンセル
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "保存中..." : "保存"}
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

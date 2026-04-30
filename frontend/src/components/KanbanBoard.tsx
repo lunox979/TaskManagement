@@ -219,7 +219,7 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
 
   return (
     <>
-      <div className="flex gap-5 p-6 overflow-x-auto items-start flex-1 bg-[#f4f5f7]">
+      <div className="flex gap-5 p-6 overflow-x-auto items-start flex-1 bg-slate-100">
         {COLUMNS.map(({ status, label }) => (
           <KanbanColumn
             key={status}
