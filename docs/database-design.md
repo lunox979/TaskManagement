@@ -10,7 +10,7 @@
 | title | VARCHAR(255) | NOT NULL | タスクのタイトル |
 | description | TEXT | NULL可 | タスクの詳細説明 |
 | status | VARCHAR(20) | NOT NULL, DEFAULT 'todo' | `todo` / `in_progress` / `done` |
-| priority | VARCHAR(10) | NULL可 | `high` / `mid` / `low` |
+| priority | VARCHAR(10) | NULL可 | `high` / `medium` / `low` |
 | due_date | DATE | NULL可 | 期限日 |
 | order_index | INTEGER | NOT NULL | カラム内の表示順（昇順） |
 | created_at | TIMESTAMP | NOT NULL, DEFAULT NOW() | 作成日時 |
