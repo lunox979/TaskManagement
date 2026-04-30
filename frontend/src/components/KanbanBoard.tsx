@@ -189,6 +189,34 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
     setSelectedTask(null);
   }
 
+  async function handleStatusChange(id: number, nextStatus: TaskStatus) {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    const request: TaskUpdateRequest = {
+      title: task.title,
+      description: task.description,
+      status: nextStatus,
+      priority: task.priority,
+      dueDate: task.dueDate,
+    };
+    const updated = await updateTask(id, request);
+    onTasksChange(tasks.map((t) => (t.id === id ? updated : t)));
+  }
+
+  async function handleTitleChange(id: number, title: string) {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    const request: TaskUpdateRequest = {
+      title,
+      description: task.description,
+      status: task.status,
+      priority: task.priority,
+      dueDate: task.dueDate,
+    };
+    const updated = await updateTask(id, request);
+    onTasksChange(tasks.map((t) => (t.id === id ? updated : t)));
+  }
+
   return (
     <>
       <div className="flex gap-5 p-6 overflow-x-auto items-start flex-1 bg-[#f4f5f7]">
@@ -205,6 +233,8 @@ export default function KanbanBoard({ tasks, onTasksChange, onAddTask }: Props) 
             onAddTask={() => onAddTask(status)}
             onTaskClick={setSelectedTask}
             onTaskDelete={handleDeleteTask}
+            onTaskStatusChange={handleStatusChange}
+            onTaskTitleChange={handleTitleChange}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragOverColumn={handleDragOverColumn}
